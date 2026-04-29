@@ -5,44 +5,32 @@ import { useHashView } from './hooks/useHashView';
 import { HomePage } from './pages/HomePage';
 import { MapPage } from './pages/MapPage';
 import { SearchPage } from './pages/SearchPage';
-import type { AddressSuggestion, ChargingFeature } from './types';
+import type { ChargingFeature } from './types';
 
 function App() {
   const { view, navigate } = useHashView();
   const [center, setCenter] = useState<[number, number]>([52.52, 13.405]);
   const [selected, setSelected] = useState<ChargingFeature | null>(null);
   const [stations, setStations] = useState<ChargingFeature[]>([]);
-  const [selectedAddress, setSelectedAddress] = useState<AddressSuggestion | null>(null);
 
   const selectedId = useMemo(() => (selected ? String(selected.properties.id ?? '') : null), [selected]);
 
   return (
     <div className="layout">
-      <header className="app-header">
-        <h1>E‑Navigator</h1>
-        <p>Finde öffentliche Ladesäulen in der Nähe deiner Adresse.</p>
-        <NavBar current={view} onNavigate={navigate} />
-      </header>
-
+      <NavBar current={view} onNavigate={navigate} />
       {view === 'home' && <HomePage />}
       {view === 'search' && (
         <SearchPage
           selectedId={selectedId}
           onCenterChange={setCenter}
-          onAddressPicked={(address) => {
-            setSelectedAddress(address);
-            navigate('map');
-          }}
           onSelect={(feature) => {
             setSelected(feature);
-            setStations((prev) => {
-              const id = String(feature.properties.id ?? '');
-              return prev.some((f) => String(f.properties.id ?? '') === id) ? prev : [feature, ...prev];
-            });
+            setStations((prev) => (prev.some((f) => f === feature) ? prev : [feature, ...prev]));
+            navigate('map');
           }}
         />
       )}
-      {view === 'map' && <MapPage center={center} stations={stations} selected={selected} selectedAddress={selectedAddress} />}
+      {view === 'map' && <MapPage center={center} stations={stations} selected={selected} />}
     </div>
   );
 }

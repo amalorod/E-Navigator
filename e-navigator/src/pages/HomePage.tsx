@@ -3,8 +3,7 @@ export function HomePage() {
     <section className="panel">
       <h2>Willkommen bei E‑Navigator</h2>
       <p>
-        Diese App zeigt öffentliche E‑Ladestationen der Bundesnetzagentur auf Basis von
-        Live-GeoJSON-Daten.
+        Infoseite
       </p>
       <ul>
         <li>Adresssuche mit Ergebnisliste</li>

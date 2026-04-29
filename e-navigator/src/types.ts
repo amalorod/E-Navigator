@@ -12,10 +12,4 @@ export type ChargingCollection = {
   features: ChargingFeature[];
 };
 
-export type AddressSuggestion = {
-  lat: number;
-  lon: number;
-  displayName: string;
-};
-
 export type AppView = 'home' | 'search' | 'map';
