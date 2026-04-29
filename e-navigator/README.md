@@ -1,73 +1,26 @@
-# React + TypeScript + Vite
+# E-Navigator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Eine React + TypeScript Anwendung zur Suche und Visualisierung von E-Ladestationen auf Basis der öffentlichen Bundesnetzagentur-API.
 
-Currently, two official plugins are available:
+## Features
+- **Home View**: Einführung und Nutzenübersicht
+- **Search View**: Adresssuche (Nominatim) + Abruf von Ladestationen (bund.dev) in der Umgebung
+- **Map View**: Interaktive Leaflet-Karte mit Marker-Clustering (Leaflet.markercluster) und Popups
+- Verknüpfte Interaktion: Auswahl in der Liste zentriert die Karte und öffnet passende Marker-Infos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## APIs
+- Ladestationen: `GET https://ladestationen.api.bund.dev/query`
+- Geocoding: `GET https://nominatim.openstreetmap.org/search`
 
-## React Compiler
+## KI-Dokumentation (Prompts)
+Die wesentlichen Codeabschnitte wurden KI-gestützt erstellt. Verwendete Hauptprompts:
+1. „Erstelle ein Vite React TypeScript Projekt mit drei Views (Home, Suche, Karte) und Navigation.“
+2. „Integriere die Bundesnetzagentur-Ladestations-API über fetch und zeige Ergebnisse als Liste an.“
+3. „Baue eine Leaflet-Karte mit Leaflet.markercluster und verknüpfe Listenauswahl mit Marker/Centering.“
+4. „Ergänze responsive UI und kurze Home-Beschreibung für eine nutzerfreundliche Struktur.“
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Start
+```bash
+npm install
+npm run dev
 ```
