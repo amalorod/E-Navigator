@@ -324,3 +324,8 @@ input:focus {
     grid-template-columns: 1fr;
   }
 }
+
+
+.map {
+  cursor: crosshair;
+}

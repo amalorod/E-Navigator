@@ -59,21 +59,19 @@ function App() {
           />
         )}
 
-        {view === 'map' && (
-          <MapPage
-            center={center}
-            stations={stations}
-            selected={selected}
-            selectedAddress={selectedAddress} onCenterChange={function (center: [number, number]): void {
-              throw new Error('Function not implemented.');
-            } } onAddressPicked={function (address: AddressSuggestion | null): void {
-              throw new Error('Function not implemented.');
-            } } onStationsLoaded={function (features: ChargingFeature[]): void {
-              throw new Error('Function not implemented.');
-            } } onSelectedStationChange={function (feature: ChargingFeature | null): void {
-              throw new Error('Function not implemented.');
-            } }          />
-        )}
+        
+          {view === 'map' && (
+            <MapPage
+              center={center}
+              stations={stations}
+              selected={selected}
+              selectedAddress={selectedAddress}
+              onCenterChange={setCenter}
+              onAddressPicked={setSelectedAddress}
+              onStationsLoaded={setStations}
+              onSelectedStationChange={setSelected}
+            />
+          )}
       </main>
     </div>
   );
