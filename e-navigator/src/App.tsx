@@ -6,18 +6,9 @@ import { HomePage } from './pages/HomePage';
 import { MapPage } from './pages/MapPage';
 import { SearchPage } from './pages/SearchPage';
 import type { AddressSuggestion, ChargingFeature } from './types';
+import { getStationId } from './utils/stations';
 
-function getStationId(feature: ChargingFeature): string {
-  const props = feature.properties ?? {};
-  const coordinates = feature.geometry?.coordinates ?? [];
 
-  return String(
-    props.id ??
-      props.uuid ??
-      props.objectid ??
-      `${coordinates[0]}-${coordinates[1]}-${props.betreiber ?? ''}-${props.strasse ?? ''}`,
-  );
-}
 
 function App() {
   const { view, navigate } = useHashView();
@@ -28,8 +19,9 @@ function App() {
   const [selectedAddress, setSelectedAddress] = useState<AddressSuggestion | null>(null);
 
   const selectedId = useMemo(() => {
-    return selected ? getStationId(selected) : null;
+  return selected ? getStationId(selected) : null;
   }, [selected]);
+
 
   const selectStationAndOpenMap = (feature: ChargingFeature) => {
     const [lon, lat] = feature.geometry.coordinates;

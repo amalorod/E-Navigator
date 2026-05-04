@@ -109,6 +109,7 @@ export function SearchPage({
         address.lat + delta,
       ]);
 
+      console.log('Erste Station:', collection.features[0]?.properties);
       const features = collection.features ?? [];
 
       setItems(features);

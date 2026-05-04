@@ -5,6 +5,14 @@ import 'leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
+import {
+  
+  getStationAddress,
+  
+  getStationPower,
+  getStationTitle,
+} from '../utils/stations';
+
 import type { AddressSuggestion, ChargingFeature } from '../types';
 
 type Props = {
@@ -44,39 +52,15 @@ function escapeHtml(value: unknown): string {
 }
 
 function getStationPopup(feature: ChargingFeature): string {
-  const p = feature.properties ?? {};
-
-  const title = escapeHtml(
-    p.betreiber ??
-      p.name ??
-      p.bezeichnung ??
-      'Ladestation',
-  );
-
-  const address = [
-    p.strasse,
-    p.hausnummer,
-    p.postleitzahl,
-    p.ort,
-  ]
-    .filter(Boolean)
-    .map(escapeHtml)
-    .join(' ');
-
-  const power = p.anschlussleistung
-    ? `<br/><span>Leistung: ${escapeHtml(p.anschlussleistung)} kW</span>`
-    : '';
-
-  const plugs = p.steckertypen || p.stecker
-    ? `<br/><span>Stecker: ${escapeHtml(p.steckertypen ?? p.stecker)}</span>`
-    : '';
+  const title = escapeHtml(getStationTitle(feature));
+  const address = escapeHtml(getStationAddress(feature));
+  const power = escapeHtml(getStationPower(feature));
 
   return `
     <div class="popup">
       <strong>${title}</strong>
-      ${address ? `<br/><span>${address}</span>` : ''}
-      ${power}
-      ${plugs}
+      ${address ? `<br/><span>${address}</span>` : '<br/><span>Adresse konnte nicht gefunden werden</span>'}
+      ${power ? `<br/><span>Leistung: ${power}</span>` : ''}
     </div>
   `;
 }
