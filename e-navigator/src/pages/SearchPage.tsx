@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import type { AddressSuggestion, ChargingFeature } from '../types';
 import { fetchAddressSuggestions, fetchStations } from '../services/api';
 
+
+
 type Props = {
   selectedId: string | null;
   onSelect: (feature: ChargingFeature) => void;
