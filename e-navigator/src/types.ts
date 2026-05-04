@@ -1,3 +1,11 @@
+export type AppView = 'home' | 'search' | 'map';
+
+export type AddressSuggestion = {
+  displayName: string;
+  lat: number;
+  lon: number;
+};
+
 export type ChargingFeature = {
   type: 'Feature';
   geometry: {
@@ -7,15 +15,10 @@ export type ChargingFeature = {
   properties: Record<string, unknown>;
 };
 
-export type ChargingCollection = {
+export type ChargingFeatureCollection = {
   type: 'FeatureCollection';
   features: ChargingFeature[];
 };
 
-export type AddressSuggestion = {
-  lat: number;
-  lon: number;
-  displayName: string;
-};
 
-export type AppView = 'home' | 'search' | 'map';
+
