@@ -10,15 +10,12 @@ export type ChargingFeature = {
   type: 'Feature';
   geometry: {
     type: 'Point';
-    coordinates: [number, number];
+    coordinates: [number, number]; // [lon, lat]
   };
   properties: Record<string, unknown>;
 };
 
-export type ChargingFeatureCollection = {
+export type ChargingCollection = {
   type: 'FeatureCollection';
   features: ChargingFeature[];
 };
-
-
-
