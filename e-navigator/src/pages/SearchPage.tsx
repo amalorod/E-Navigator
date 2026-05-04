@@ -2,6 +2,12 @@ import { useEffect, useState } from 'react';
 import type { AddressSuggestion, ChargingFeature } from '../types';
 import { fetchAddressSuggestions, fetchStations } from '../services/api';
 
+import {
+  getStationAddress,
+  getStationId,
+  getStationTitle,
+} from '../utils/stations';
+
 
 
 type Props = {
@@ -13,26 +19,9 @@ type Props = {
   onOpenMap: () => void;
 };
 
-function getStationId(feature: ChargingFeature): string {
-  const props = feature.properties ?? {};
-  const coordinates = feature.geometry?.coordinates ?? [];
 
-  return String(
-    props.id ??
-      props.uuid ??
-      props.objectid ??
-      `${coordinates[0]}-${coordinates[1]}-${props.betreiber ?? ''}-${props.strasse ?? ''}`,
-  );
-}
 
-function formatStationTitle(feature: ChargingFeature): string {
-  return String(
-    feature.properties?.betreiber ??
-      feature.properties?.name ??
-      feature.properties?.bezeichnung ??
-      'Ladestation',
-  );
-}
+
 
 function formatStationAddress(feature: ChargingFeature): string {
   const p = feature.properties ?? {};
@@ -212,11 +201,15 @@ export function SearchPage({
               className={selectedId === id ? 'list-item active' : 'list-item'}
               onClick={() => handleStationClick(feature)}
             >
-              <strong>{formatStationTitle(feature)}</strong>
+              
+              <strong>{getStationTitle(feature)}</strong>
 
               <span>
-                {formatStationAddress(feature) || 'Adresse nicht verfügbar'}
+                {getStationAddress(feature) || 'Adresse konnte nicht gefunden werden'}
               </span>
+
+
+             
 
               <small>
                 {lat.toFixed(5)}, {lon.toFixed(5)}

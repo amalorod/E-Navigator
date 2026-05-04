@@ -1,11 +1,27 @@
 import type { ChargingFeature } from '../types';
 
-function firstValue(
+function normalizeKey(key: string): string {
+  return key
+    .toLowerCase()
+    .replaceAll('ä', 'ae')
+    .replaceAll('ö', 'oe')
+    .replaceAll('ü', 'ue')
+    .replaceAll('ß', 'ss')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function getProperty(
   properties: Record<string, unknown>,
-  keys: string[],
+  possibleKeys: string[],
 ): string {
-  for (const key of keys) {
-    const value = properties[key];
+  const normalizedLookup = new Map<string, unknown>();
+
+  for (const [key, value] of Object.entries(properties)) {
+    normalizedLookup.set(normalizeKey(key), value);
+  }
+
+  for (const key of possibleKeys) {
+    const value = normalizedLookup.get(normalizeKey(key));
 
     if (value !== undefined && value !== null && String(value).trim() !== '') {
       return String(value).trim();
@@ -19,34 +35,30 @@ export function getStationId(feature: ChargingFeature): string {
   const p = feature.properties ?? {};
   const [lon, lat] = feature.geometry.coordinates;
 
-  const knownId = firstValue(p, [
+  const id = getProperty(p, [
     'id',
-    'ID',
     'objectid',
     'OBJECTID',
-    'ObjectId',
     'uuid',
-    'UUID',
+    'FID',
   ]);
 
-  if (knownId) return knownId;
+  if (id) return id;
 
-  return `${lon}-${lat}-${getStationTitle(feature)}-${getStationAddress(feature)}`;
+  return `${lat}-${lon}-${getStationTitle(feature)}-${getStationAddress(feature)}`;
 }
 
 export function getStationTitle(feature: ChargingFeature): string {
   const p = feature.properties ?? {};
 
   return (
-    firstValue(p, [
+    getProperty(p, [
       'betreiber',
       'Betreiber',
       'BETREIBER',
       'operator',
-      'Operator',
       'name',
       'Name',
-      'bezeichnung',
       'Bezeichnung',
     ]) || 'Ladestation'
   );
@@ -55,31 +67,43 @@ export function getStationTitle(feature: ChargingFeature): string {
 export function getStationAddress(feature: ChargingFeature): string {
   const p = feature.properties ?? {};
 
-  const street = firstValue(p, [
-    'strasse',
+  const fullAddress = getProperty(p, [
+    'adresse',
+    'Adresse',
+    'anschrift',
+    'Anschrift',
+    'standort',
+    'Standort',
+  ]);
+
+  if (fullAddress) return fullAddress;
+
+  const street = getProperty(p, [
     'straße',
-    'Strasse',
     'Straße',
+    'strasse',
+    'Strasse',
     'STRASSE',
     'street',
   ]);
 
-  const houseNumber = firstValue(p, [
+  const houseNumber = getProperty(p, [
     'hausnummer',
     'Hausnummer',
     'HAUSNUMMER',
-    'houseNumber',
+    'nr',
+    'Nr',
   ]);
 
-  const postcode = firstValue(p, [
+  const postcode = getProperty(p, [
     'postleitzahl',
     'Postleitzahl',
     'PLZ',
     'plz',
-    'postcode',
+    'zip',
   ]);
 
-  const city = firstValue(p, [
+  const city = getProperty(p, [
     'ort',
     'Ort',
     'ORT',
@@ -94,10 +118,11 @@ export function getStationAddress(feature: ChargingFeature): string {
 export function getStationPower(feature: ChargingFeature): string {
   const p = feature.properties ?? {};
 
-  return firstValue(p, [
+  return getProperty(p, [
     'anschlussleistung',
     'Anschlussleistung',
-    'ANSCHLUSSLEISTUNG',
+    'ladeleistung',
+    'Ladeleistung',
     'leistung',
     'Leistung',
     'power',
@@ -111,23 +136,4 @@ export function escapeHtml(value: unknown): string {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
-}
-
-export function distanceInKm(
-  a: [number, number], // [lat, lon]
-  b: [number, number], // [lat, lon]
-): number {
-  const earthRadius = 6371;
-
-  const dLat = ((b[0] - a[0]) * Math.PI) / 180;
-  const dLon = ((b[1] - a[1]) * Math.PI) / 180;
-
-  const lat1 = (a[0] * Math.PI) / 180;
-  const lat2 = (b[0] * Math.PI) / 180;
-
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-
-  return 2 * earthRadius * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }
