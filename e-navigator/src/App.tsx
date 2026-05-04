@@ -64,8 +64,15 @@ function App() {
             center={center}
             stations={stations}
             selected={selected}
-            selectedAddress={selectedAddress}
-          />
+            selectedAddress={selectedAddress} onCenterChange={function (center: [number, number]): void {
+              throw new Error('Function not implemented.');
+            } } onAddressPicked={function (address: AddressSuggestion | null): void {
+              throw new Error('Function not implemented.');
+            } } onStationsLoaded={function (features: ChargingFeature[]): void {
+              throw new Error('Function not implemented.');
+            } } onSelectedStationChange={function (feature: ChargingFeature | null): void {
+              throw new Error('Function not implemented.');
+            } }          />
         )}
       </main>
     </div>

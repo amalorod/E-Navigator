@@ -137,3 +137,39 @@ export function escapeHtml(value: unknown): string {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
 }
+
+
+export function distanceInKm(
+  a: [number, number], // [lat, lon]
+  b: [number, number], // [lat, lon]
+): number {
+  const earthRadius = 6371;
+
+  const dLat = ((b[0] - a[0]) * Math.PI) / 180;
+  const dLon = ((b[1] - a[1]) * Math.PI) / 180;
+
+  const lat1 = (a[0] * Math.PI) / 180;
+  const lat2 = (b[0] * Math.PI) / 180;
+
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+
+  return 2 * earthRadius * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+}
+
+export function getBboxAroundPoint(
+  lat: number,
+  lon: number,
+  radiusKm: number,
+): [number, number, number, number] {
+  const latDelta = radiusKm / 111.32;
+  const lonDelta = radiusKm / (111.32 * Math.cos((lat * Math.PI) / 180));
+
+  return [
+    lon - lonDelta,
+    lat - latDelta,
+    lon + lonDelta,
+    lat + latDelta,
+  ];
+}

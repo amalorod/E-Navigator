@@ -1,25 +1,31 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
+import type { AddressSuggestion, ChargingFeature } from '../types';
+import { fetchStations } from '../services/api';
 import {
-  
+  distanceInKm,
+  escapeHtml,
+  getBboxAroundPoint,
   getStationAddress,
-  
+  getStationId,
   getStationPower,
   getStationTitle,
 } from '../utils/stations';
-
-import type { AddressSuggestion, ChargingFeature } from '../types';
 
 type Props = {
   center: [number, number];
   stations: ChargingFeature[];
   selected: ChargingFeature | null;
   selectedAddress: AddressSuggestion | null;
+  onCenterChange: (center: [number, number]) => void;
+  onAddressPicked: (address: AddressSuggestion | null) => void;
+  onStationsLoaded: (features: ChargingFeature[]) => void;
+  onSelectedStationChange: (feature: ChargingFeature | null) => void;
 };
 
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
@@ -29,27 +35,6 @@ L.Icon.Default.mergeOptions({
   iconUrl: new URL('leaflet/dist/images/marker-icon.png', import.meta.url).toString(),
   shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).toString(),
 });
-
-function getStationId(feature: ChargingFeature): string {
-  const props = feature.properties ?? {};
-  const coordinates = feature.geometry?.coordinates ?? [];
-
-  return String(
-    props.id ??
-      props.uuid ??
-      props.objectid ??
-      `${coordinates[0]}-${coordinates[1]}-${props.betreiber ?? ''}-${props.strasse ?? ''}`,
-  );
-}
-
-function escapeHtml(value: unknown): string {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-}
 
 function getStationPopup(feature: ChargingFeature): string {
   const title = escapeHtml(getStationTitle(feature));
@@ -70,17 +55,107 @@ export function MapPage({
   stations,
   selected,
   selectedAddress,
+  onCenterChange,
+  onAddressPicked,
+  onStationsLoaded,
+  onSelectedStationChange,
 }: Props) {
-  console.log('MapPage stations:', stations.length, stations[0]);
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<L.Map | null>(null);
   const clusterLayer = useRef<L.MarkerClusterGroup | null>(null);
   const addressMarker = useRef<L.CircleMarker | null>(null);
   const markerRefs = useRef<Map<string, L.Marker>>(new Map());
+  const requestIdRef = useRef(0);
+
+  const [loadingAroundPoint, setLoadingAroundPoint] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   const selectedId = useMemo(() => {
     return selected ? getStationId(selected) : null;
   }, [selected]);
+
+  const loadStationsAroundMapClick = useCallback(
+    async (lat: number, lon: number) => {
+      const requestId = requestIdRef.current + 1;
+      requestIdRef.current = requestId;
+
+      setLoadingAroundPoint(true);
+      setMapError(null);
+
+      const clickedPoint: AddressSuggestion = {
+        lat,
+        lon,
+        displayName: `Gewählter Kartenpunkt: ${lat.toFixed(5)}, ${lon.toFixed(5)}`,
+      };
+
+      // Alte Auswahl und alte Ladesäulen sofort entfernen
+      onSelectedStationChange(null);
+      onStationsLoaded([]);
+
+      // Neuen roten Marker setzen
+      onAddressPicked(clickedPoint);
+      onCenterChange([lat, lon]);
+
+      try {
+        const radiusKm = 10;
+        const bbox = getBboxAroundPoint(lat, lon, radiusKm);
+
+        const collection = await fetchStations(bbox);
+
+        // Falls zwischenzeitlich erneut geklickt wurde, alte Antwort ignorieren
+        if (requestId !== requestIdRef.current) {
+          return;
+        }
+
+        const nearbyStations = collection.features
+          .filter((feature) => {
+            const [stationLon, stationLat] = feature.geometry.coordinates;
+
+            return (
+              Number.isFinite(stationLat) &&
+              Number.isFinite(stationLon) &&
+              distanceInKm([lat, lon], [stationLat, stationLon]) <= radiusKm
+            );
+          })
+          .sort((a, b) => {
+            const [aLon, aLat] = a.geometry.coordinates;
+            const [bLon, bLat] = b.geometry.coordinates;
+
+            return (
+              distanceInKm([lat, lon], [aLat, aLon]) -
+              distanceInKm([lat, lon], [bLat, bLon])
+            );
+          });
+
+        onStationsLoaded(nearbyStations);
+
+        const map = mapInstance.current;
+
+        if (map) {
+          map.flyTo([lat, lon], Math.max(map.getZoom(), 13), {
+            animate: true,
+            duration: 0.5,
+          });
+        }
+      } catch (error) {
+        if (requestId === requestIdRef.current) {
+          console.error(error);
+          onStationsLoaded([]);
+          setMapError('Die Ladesäulen im Umkreis konnten nicht geladen werden.');
+        }
+      } finally {
+        if (requestId === requestIdRef.current) {
+          setLoadingAroundPoint(false);
+        }
+      }
+    },
+    [
+      onAddressPicked,
+      onCenterChange,
+      onSelectedStationChange,
+      onStationsLoaded,
+    ],
+  );
 
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
@@ -116,6 +191,22 @@ export function MapPage({
       markerRefs.current.clear();
     };
   }, []);
+
+  useEffect(() => {
+    const map = mapInstance.current;
+
+    if (!map) return;
+
+    const handleClick = (event: L.LeafletMouseEvent) => {
+      loadStationsAroundMapClick(event.latlng.lat, event.latlng.lng);
+    };
+
+    map.on('click', handleClick);
+
+    return () => {
+      map.off('click', handleClick);
+    };
+  }, [loadStationsAroundMapClick]);
 
   useEffect(() => {
     const cluster = clusterLayer.current;
@@ -170,27 +261,30 @@ export function MapPage({
   useEffect(() => {
     const map = mapInstance.current;
 
-    if (!map || !selectedAddress) return;
+    if (!map) return;
 
     if (addressMarker.current) {
       map.removeLayer(addressMarker.current);
       addressMarker.current = null;
     }
 
+    if (!selectedAddress) return;
+
     addressMarker.current = L.circleMarker(
       [selectedAddress.lat, selectedAddress.lon],
       {
-        radius: 9,
+        radius: 10,
         color: '#dc2626',
         weight: 3,
         fillColor: '#ef4444',
-        fillOpacity: 0.25,
+        fillOpacity: 0.28,
       },
     )
       .addTo(map)
       .bindPopup(
-        `<strong>Gewählte Adresse</strong><br/>${escapeHtml(selectedAddress.displayName)}`,
-      );
+        `<strong>Ausgewählter Punkt</strong><br/>${escapeHtml(selectedAddress.displayName)}`,
+      )
+      .openPopup();
   }, [selectedAddress]);
 
   return (
@@ -198,12 +292,24 @@ export function MapPage({
       <div className="map-header">
         <div>
           <p className="eyebrow">Karte</p>
-          <h2>Ladestationen in der Nähe</h2>
+          <h2>Ladestationen im Umkreis</h2>
           <p className="muted">
-            {stations.length > 0
-              ? `${stations.length} Ladepunkte im aktuellen Suchbereich`
-              : 'Noch keine Ladepunkte geladen. Starte zuerst eine Suche.'}
+            Klicke auf die Karte, um alle Ladesäulen im Umkreis von 10 km zu laden.
           </p>
+
+          {loadingAroundPoint && (
+            <p className="muted">Lade Ladesäulen im 10-km-Umkreis…</p>
+          )}
+
+          {!loadingAroundPoint && stations.length > 0 && (
+            <p className="muted">
+              {stations.length} Ladesäulen im Umkreis gefunden.
+            </p>
+          )}
+
+          {mapError && (
+            <p className="notice error">{mapError}</p>
+          )}
         </div>
       </div>
 
