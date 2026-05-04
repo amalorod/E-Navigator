@@ -71,6 +71,7 @@ export function MapPage({
   selected,
   selectedAddress,
 }: Props) {
+  console.log('MapPage stations:', stations.length, stations[0]);
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstance = useRef<L.Map | null>(null);
   const clusterLayer = useRef<L.MarkerClusterGroup | null>(null);
