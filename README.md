@@ -1,25 +1,26 @@
-#E-Navigator
-##Eine React + TypeScript Anwendung zur Suche und Visualisierung von E-Ladestationen auf Basis der öffentlichen Bundesnetzagentur-API.
+# E-Navigator
 
-#Features
-Home View: Einführung und Nutzenübersicht
-Search View: Adresssuche (Nominatim) + Abruf von Ladestationen (bund.dev) in der Umgebung
-Map View: Interaktive Leaflet-Karte mit Marker-Clustering (Leaflet.markercluster) und Popups
-Verknüpfte Interaktion: Auswahl in der Liste zentriert die Karte und öffnet passende Marker-Infos
+Eine React + TypeScript Anwendung zur Suche und Visualisierung von E-Ladestationen auf Basis der öffentlichen Bundesnetzagentur-API.
 
-#APIs
-Ladestationen: GET https://ladestationen.api.bund.dev/query
-Geocoding: GET https://nominatim.openstreetmap.org/search
-KI-Dokumentation (Prompts)
-Die wesentlichen Codeabschnitte wurden KI-gestützt erstellt. 
+## Features
+- **Home View**: Einführung und Nutzenübersicht
+- **Search View**: Adresssuche (Nominatim) + Abruf von Ladestationen (bund.dev) in der Umgebung
+- **Map View**: Interaktive Leaflet-Karte mit Marker-Clustering (Leaflet.markercluster) und Popups
+- Verknüpfte Interaktion: Auswahl in der Liste zentriert die Karte und öffnet passende Marker-Infos
 
-##Verwendete Hauptprompts:
+## APIs
+- Ladestationen: `GET https://ladestationen.api.bund.dev/query`
+- Geocoding: `GET https://nominatim.openstreetmap.org/search`
 
-„Erstelle ein Vite React TypeScript Projekt mit drei Views (Home, Suche, Karte) und Navigation.“
-„Integriere die Bundesnetzagentur-Ladestations-API über fetch und zeige Ergebnisse als Liste an.“
-„Baue eine Leaflet-Karte mit Leaflet.markercluster und verknüpfe Listenauswahl mit Marker/Centering.“
-„Ergänze responsive UI und kurze Home-Beschreibung für eine nutzerfreundliche Struktur.“
-Start
+## KI-Dokumentation (Prompts)
+Die wesentlichen Codeabschnitte wurden KI-gestützt erstellt. Verwendete Hauptprompts:
+1. „Erstelle ein Vite React TypeScript Projekt mit drei Views (Home, Suche, Karte) und Navigation.“
+2. „Integriere die Bundesnetzagentur-Ladestations-API über fetch und zeige Ergebnisse als Liste an.“
+3. „Baue eine Leaflet-Karte mit Leaflet.markercluster und verknüpfe Listenauswahl mit Marker/Centering.“
+4. „Ergänze responsive UI und kurze Home-Beschreibung für eine nutzerfreundliche Struktur.“
+
+## Start
+```bash
 npm install
 npm run dev
-
+```
