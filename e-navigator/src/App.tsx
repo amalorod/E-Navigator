@@ -7,41 +7,75 @@ import { MapPage } from './pages/MapPage';
 import { SearchPage } from './pages/SearchPage';
 import type { AddressSuggestion, ChargingFeature } from './types';
 
+function getStationId(feature: ChargingFeature): string {
+  const props = feature.properties ?? {};
+  const coordinates = feature.geometry?.coordinates ?? [];
+
+  return String(
+    props.id ??
+      props.uuid ??
+      props.objectid ??
+      `${coordinates[0]}-${coordinates[1]}-${props.betreiber ?? ''}-${props.strasse ?? ''}`,
+  );
+}
+
 function App() {
   const { view, navigate } = useHashView();
+
   const [center, setCenter] = useState<[number, number]>([52.52, 13.405]);
   const [selected, setSelected] = useState<ChargingFeature | null>(null);
   const [stations, setStations] = useState<ChargingFeature[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<AddressSuggestion | null>(null);
 
-  const selectedId = useMemo(() => (selected ? String(selected.properties.id ?? '') : null), [selected]);
+  const selectedId = useMemo(() => {
+    return selected ? getStationId(selected) : null;
+  }, [selected]);
+
+  const selectStationAndOpenMap = (feature: ChargingFeature) => {
+    const [lon, lat] = feature.geometry.coordinates;
+
+    setSelected(feature);
+    setCenter([lat, lon]);
+    navigate('map');
+  };
 
   return (
     <div className="layout">
       <header className="app-header">
-        <h1>E‑Navigator</h1>
-        <p>Finde öffentliche Ladesäulen in der Nähe deiner Adresse.</p>
+        <div>
+          <p className="eyebrow">E-Mobilität einfach finden</p>
+          <h1>E‑Navigator</h1>
+          <p className="header-copy">
+            Suche eine Adresse und finde öffentliche Ladepunkte in der Nähe.
+          </p>
+        </div>
+
         <NavBar current={view} onNavigate={navigate} />
       </header>
 
-      {view === 'home' && <HomePage />}
-      {view === 'search' && (
-        <SearchPage
-          selectedId={selectedId}
-          onCenterChange={setCenter}
-          onAddressPicked={(address) => {
-            setSelectedAddress(address);
-            navigate('map');
-          }}
-          onStationsLoaded={(features) => {
-            setStations(features);
-          }}
-          onSelect={(feature) => {
-            setSelected(feature);
-          }}
-        />
-      )}
-      {view === 'map' && <MapPage center={center} stations={stations} selected={selected} selectedAddress={selectedAddress} />}
+      <main>
+        {view === 'home' && <HomePage />}
+
+        {view === 'search' && (
+          <SearchPage
+            selectedId={selectedId}
+            onCenterChange={setCenter}
+            onAddressPicked={setSelectedAddress}
+            onStationsLoaded={setStations}
+            onSelect={selectStationAndOpenMap}
+            onOpenMap={() => navigate('map')}
+          />
+        )}
+
+        {view === 'map' && (
+          <MapPage
+            center={center}
+            stations={stations}
+            selected={selected}
+            selectedAddress={selectedAddress}
+          />
+        )}
+      </main>
     </div>
   );
 }

@@ -1,16 +1,31 @@
 export function HomePage() {
   return (
-    <section className="panel">
-      <h2>Willkommen bei E‑Navigator</h2>
-      <p>
-        Diese App zeigt öffentliche E‑Ladestationen der Bundesnetzagentur auf Basis von
-        Live-GeoJSON-Daten.
+    <section className="panel hero-panel">
+      <p className="eyebrow">Willkommen</p>
+
+      <h2>Finde E‑Ladestationen rund um deinen Standort</h2>
+
+      <p className="muted">
+        Der E‑Navigator verbindet Adresssuche, Ergebnisliste und Kartenansicht.
+        Wähle eine Adresse aus und sieh direkt passende Ladepunkte in der Umgebung.
       </p>
-      <ul>
-        <li>Adresssuche mit Ergebnisliste</li>
-        <li>Interaktive Karte mit Marker-Clustering und Popups</li>
-        <li>Verknüpfte Auswahl zwischen Liste und Karte</li>
-      </ul>
+
+      <div className="feature-grid">
+        <article className="feature-card">
+          <strong>Adresse suchen</strong>
+          <span>Finde Orte über eine komfortable Vorschlagsliste.</span>
+        </article>
+
+        <article className="feature-card">
+          <strong>Karte öffnen</strong>
+          <span>Zeige Ladepunkte dynamisch mit Leaflet und Clustering.</span>
+        </article>
+
+        <article className="feature-card">
+          <strong>Station auswählen</strong>
+          <span>Klick auf ein Ergebnis zentriert die Karte auf den Ladepunkt.</span>
+        </article>
+      </div>
     </section>
   );
 }
