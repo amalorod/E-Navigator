@@ -20,7 +20,11 @@ body {
   min-width: 320px;
   color: #111827;
   background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 34rem),
+    radial-gradient(
+      circle at top left,
+      rgba(37, 99, 235, 0.12),
+      transparent 34rem
+    ),
     #f3f4f6;
 }
 
@@ -141,6 +145,10 @@ h3 {
 
 .search-wrap {
   position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  align-items: stretch;
 }
 
 input {
@@ -156,6 +164,30 @@ input {
 input:focus {
   border-color: #2563eb;
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.location-button {
+  flex-shrink: 0;
+  padding: 0.7rem 1.2rem;
+  background: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.location-button:hover:not(:disabled) {
+  background: #059669;
+  border-color: #059669;
+}
+
+.location-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .dropdown {
@@ -241,6 +273,42 @@ input:focus {
   color: #6b7280;
 }
 
+.station-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.distance-badge {
+  flex-shrink: 0;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.address {
+  color: #4b5563;
+  font-weight: 500;
+  display: block;
+}
+
+.power-info {
+  color: #059669;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: block;
+}
+
+.coordinates {
+  color: #6b7280;
+  display: block;
+}
+
 .empty-state,
 .notice {
   margin-top: 1rem;
@@ -324,7 +392,6 @@ input:focus {
     grid-template-columns: 1fr;
   }
 }
-
 
 .map {
   cursor: crosshair;
